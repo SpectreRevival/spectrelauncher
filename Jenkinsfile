@@ -102,7 +102,7 @@ pipeline {
                                         --dir deployed ^
                                         out\\build\\x64-release-win\\SpectreRevivalLauncher.exe
                                     """
-                                    powershell "Compress-Archive -Path 'deploy\\*' -DestinationPath 'launcher-win-x64.zip' -Force"
+                                    powershell "Compress-Archive -Path 'deployed\\*' -DestinationPath 'launcher-win-x64.zip' -Force"
                                 }
                             }
                         }
