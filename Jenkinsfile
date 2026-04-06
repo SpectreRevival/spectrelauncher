@@ -114,6 +114,8 @@ pipeline {
                             script {
                                 if (env.OS == 'windows') {
                                     cleanCPPBuildDir("out/build/x64-${BUILD_TYPE}-win", "package-${BUILD_TYPE}-win", BUILD_TYPE == "debug")
+				    bat "rmdir /s /q package-release-win\\SpectreRevivalLauncher_autogen"
+				    bat "rmdir /s /q package-release-win\\.qt"
                                     archiveArtifacts artifacts: "package-${BUILD_TYPE}-win/**", fingerprint: true
                                 } else {
                                     archiveArtifacts artifacts: "launcher-linux-x64.zip", fingerprint: true
