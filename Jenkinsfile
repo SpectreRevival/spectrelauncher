@@ -99,10 +99,8 @@ pipeline {
                                     bat """
                                         out\\build\\x64-release-win\\vcpkg_installed\\x64-windows\\tools\\qt6\\bin\\windeployqt.exe ^
                                         --release --force ^
-                                        --dir deployed ^
                                         out\\build\\x64-release-win\\SpectreRevivalLauncher.exe
                                     """
-                                    powershell "Compress-Archive -Path 'deployed\\*' -DestinationPath 'launcher-win-x64.zip' -Force"
                                 }
                             }
                         }
@@ -115,7 +113,8 @@ pipeline {
                         steps {
                             script {
                                 if (env.OS == 'windows') {
-                                    archiveArtifacts artifacts: "launcher-win-x64.zip", fingerprint: true
+                                    cleanCPPBuildDir("out/build/x64-${BUILD_TYPE}-win", "package-${BUILD_TYPE}-win", BUILD_TYPE == "debug")
+                                    archiveArtifacts artifacts: "package-${BUILD_TYPE}-win/**", fingerprint: true
                                 } else {
                                     archiveArtifacts artifacts: "launcher-linux-x64.zip", fingerprint: true
                                 }
