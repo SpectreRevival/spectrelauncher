@@ -90,7 +90,7 @@ pipeline {
                                     sh "mkdir -p deploy/usr/bin"
                                     sh "mkdir -p deploy/usr/share/applications"
                                     sh "mkdir -p deploy/usr/share/icons/hicolor/256x256/apps"
-                                    sh "cp build/SpectreRevivalLauncher deploy/usr/bin"
+                                    sh "cp build/out/x64-release-linux/SpectreRevivalLauncher deploy/usr/bin"
                                     sh "cp assets/ico256.png deploy/usr/share/icons/hicolor/256x256/apps/spectre-revival-launcher.png"
                                     sh "cp assets/AppImageDeploy.desktop deploy/usr/share/applications/spectre-launcher.desktop"
                                     sh "linuxdeployqt deploy/usr/share/applications/spectre-launcher.desktop -appimage"
