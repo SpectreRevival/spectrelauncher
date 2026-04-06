@@ -12,6 +12,8 @@
 *.env
 auth.json
 .idea/
+deploy/
+deployed/
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs

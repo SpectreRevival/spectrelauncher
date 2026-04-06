@@ -50,25 +50,6 @@ pipeline {
                         }
                     }
 
-                    stage("Write auth.json") {
-                        steps {
-                            withCredentials([
-                                string(credentialsId: 'STEAM_KEY', variable: 'STEAM_KEY')
-                            ]) {
-                                script {
-                                    if (isUnix()) {
-                                        sh "echo \"{\\\"steamApiKey\\\": \\\"$STEAM_KEY\\\"}\" > auth.json"
-                                    } else {
-                                        powershell '''
-                                            $content = "{`"steamApiKey`": `"$env:STEAM_KEY`"}"
-                                            Set-Content -Path auth.json -Value $content
-                                        '''
-                                    }
-                                }
-                            }
-                        }
-                    }
-
                     stage('Configure') {
                         steps {
                             script {
@@ -99,15 +80,44 @@ pipeline {
                         }
                     }
 
+                    stage("Deploy qt application"){
+                        when {
+                            expression { BUILD_TYPE == 'release' }
+                        }
+                        steps {
+                            script {
+                                if(isUnix()){
+                                    sh "mkdir -p deploy/usr/bin"
+                                    sh "mkdir -p deploy/usr/share/applications"
+                                    sh "mkdir -p deploy/usr/share/icons/hicolor/256x256/apps"
+                                    sh "cp build/SpectreRevivalLauncher deploy/usr/bin"
+                                    sh "cp assets/ico256.png deploy/usr/share/icons/hicolor/256x256/apps/spectre-revival-launcher.png"
+                                    sh "cp assets/AppImageDeploy.desktop deploy/usr/share/applications/spectre-launcher.desktop"
+                                    sh "linuxdeployqt deploy/usr/share/applications/spectre-launcher.desktop -appimage"
+                                    sh "zip -j launcher-linux-x64.zip *.AppImage"
+                                } else {
+                                    bat """
+                                        out\\build\\x64-release-win\\vcpkg_installed\\x64-windows\\tools\\qt6\\bin\\windeployqt.exe ^
+                                        --release --force ^
+                                        --dir deployed ^
+                                        out\\build\\x64-release-win\\SpectreRevivalLauncher.exe
+                                    """
+                                    powershell "Compress-Archive -Path 'deploy\\*' -DestinationPath 'launcher-win-x64.zip' -Force"
+                                }
+                            }
+                        }
+                    }
+
                     stage('Archive') {
+                        when {
+                            expression { BUILD_TYPE == 'release' }
+                        }
                         steps {
                             script {
                                 if (env.OS == 'windows') {
-                                    cleanCPPBuildDir("out/build/x64-${BUILD_TYPE}-win", "package-${BUILD_TYPE}-win", BUILD_TYPE == "debug")
-                                    archiveArtifacts artifacts: "package-${BUILD_TYPE}-win/**", fingerprint: true
+                                    archiveArtifacts artifacts: "launcher-win-x64.zip", fingerprint: true
                                 } else {
-                                    cleanCPPBuildDir("out/build/x64-${BUILD_TYPE}-linux", "package-${BUILD_TYPE}-linux", BUILD_TYPE == "debug")
-                                    archiveArtifacts artifacts: "package-${BUILD_TYPE}-linux/**", fingerprint: true
+                                    archiveArtifacts artifacts: "launcher-linux-x64.zip", fingerprint: true
                                 }
                             }
                         }
