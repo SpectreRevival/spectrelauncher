@@ -87,14 +87,15 @@ pipeline {
                         steps {
                             script {
                                 if(isUnix()){
-                                    sh "mkdir -p deploy/usr/bin"
+                                    /*sh "mkdir -p deploy/usr/bin"
                                     sh "mkdir -p deploy/usr/share/applications"
                                     sh "mkdir -p deploy/usr/share/icons/hicolor/256x256/apps"
                                     sh "cp out/build/x64-release-linux/SpectreRevivalLauncher deploy/usr/bin"
                                     sh "cp assets/ico256.png deploy/usr/share/icons/hicolor/256x256/apps/spectre-revival-launcher.png"
                                     sh "cp assets/AppImageDeploy.desktop deploy/usr/share/applications/spectre-launcher.desktop"
                                     sh "linuxdeployqt deploy/usr/share/applications/spectre-launcher.desktop -appimage -unsupported-allow-new-glibc -qmake=out/build/x64-release-linux/vcpkg_installed/x64-linux/tools/Qt6/bin/qmake"
-                                    sh "zip -j launcher-linux-x64.zip *.AppImage"
+                                    sh "zip -j launcher-linux-x64.zip *.AppImage"*/
+                                    echo "not bothering with linuxdeployqt right now since Spectre is windows-only"
                                 } else {
                                     bat """
                                         out\\build\\x64-release-win\\vcpkg_installed\\x64-windows\\tools\\qt6\\bin\\windeployqt.exe ^
@@ -118,7 +119,7 @@ pipeline {
 				    bat "rmdir /s /q package-release-win\\.qt"
                                     archiveArtifacts artifacts: "package-${BUILD_TYPE}-win/**", fingerprint: true
                                 } else {
-                                    archiveArtifacts artifacts: "launcher-linux-x64.zip", fingerprint: true
+                                    //archiveArtifacts artifacts: "launcher-linux-x64.zip", fingerprint: true
                                 }
                             }
                         }
@@ -212,6 +213,23 @@ pipeline {
                         }
                     }
                 }
+            }
+        }
+
+        stage("Release artifact upload"){
+            when {
+                buildingTag()
+            }
+            environment {
+                GH_TOKEN = credentials('release-gh-token')
+            }
+            agent { label 'linux' }
+            steps {
+                copyArtifacts(projectName: env.JOB_NAME, selector: specific(env.BUILD_NUMBER), filter: 'package-release-win/**', target: 'launcher-x64-win')
+                sh "zip -j launcher-x64-win.zip launcher-x64-win/*"
+                sh """
+                    gh release create "${GIT_TAG}" --title "Release ${GIT_TAG}" --repo SpectreRevival/pragmabackend --latest launcher-x64-win.zip
+                """
             }
         }
     }
