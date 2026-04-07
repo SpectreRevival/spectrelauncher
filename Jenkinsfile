@@ -93,7 +93,7 @@ pipeline {
                                     sh "cp out/build/x64-release-linux/SpectreRevivalLauncher deploy/usr/bin"
                                     sh "cp assets/ico256.png deploy/usr/share/icons/hicolor/256x256/apps/spectre-revival-launcher.png"
                                     sh "cp assets/AppImageDeploy.desktop deploy/usr/share/applications/spectre-launcher.desktop"
-                                    sh "linuxdeployqt deploy/usr/share/applications/spectre-launcher.desktop -appimage -unsupported-allow-new-glibc"
+                                    sh "linuxdeployqt deploy/usr/share/applications/spectre-launcher.desktop -appimage -unsupported-allow-new-glibc -qmake=out/build/x64-release-linux/vcpkg_installed/x64-linux/tools/Qt6/bin/qmake"
                                     sh "zip -j launcher-linux-x64.zip *.AppImage"
                                 } else {
                                     bat """
