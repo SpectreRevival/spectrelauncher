@@ -127,25 +127,6 @@ pipeline {
                 }
             }
         }
-
-        stage("Release artifact upload"){
-            when {
-                buildingTag()
-            }
-            environment {
-                GH_TOKEN = credentials('release-gh-token')
-            }
-            agent { label 'linux' }
-            steps {
-                script {
-                    copyArtifacts(projectName: env.JOB_NAME, selector: specific(env.BUILD_NUMBER), filter: 'package-release-win/**', target: 'launcher-x64-win')
-                }
-                sh "zip -j launcher-x64-win.zip launcher-x64-win/*"
-                sh """
-                    gh release create "${GIT_TAG}" --title "Release ${GIT_TAG}" --repo SpectreRevival/pragmabackend --latest launcher-x64-win.zip
-                """
-            }
-        }
     }
     post {
         always {
